@@ -9,8 +9,10 @@ const { getApiEndpoints } = require("./controllers/endpoints.controllers");
 const {
   getArticlesById,
   getArticles,
-  getCommentsByArticleId,
 } = require("./controllers/articles.controllers");
+const {
+  getCommentsByArticleId,
+} = require("./controllers/comments.controllers");
 const app = express();
 
 app.get("/api", getApiEndpoints);
