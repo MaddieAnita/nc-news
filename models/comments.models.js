@@ -19,3 +19,16 @@ exports.findCommentsByArticleId = (article_id) => {
       return rows;
     });
 };
+
+exports.insertCommentByArticleId = (article_id, commentToPost) => {
+  const queryValues = [commentToPost.body, article_id, commentToPost.username];
+  return db
+    .query(
+      `INSERT INTO comments (body, article_id, author)
+  VALUES ($1, $2, $3) RETURNING *;`,
+      queryValues
+    )
+    .then(({ rows }) => {
+      return rows;
+    });
+};
