@@ -107,6 +107,7 @@ describe("GET: /api/articles/:article_id/comments", () => {
         expect(articleComments).toBeSortedBy("created_at", {
           descending: true,
         });
+        expect(articleComments).toHaveLength(11);
         articleComments.forEach((comment) => {
           expect(comment.article_id).toBe(1);
           expect(comment).toHaveProperty("comment_id");
@@ -123,7 +124,15 @@ describe("GET: /api/articles/:article_id/comments", () => {
       .get("/api/articles/9999999/comments")
       .expect(404)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Article not found");
+        expect(msg).toBe("Not found");
+      });
+  });
+  test("404: sends appropriate message and status when article does not have any comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Not found");
       });
   });
   test("400: sends appropriate message and status when article id passed is not a number", () => {
