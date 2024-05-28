@@ -37,6 +37,32 @@ describe("GET: /api/topics", () => {
 });
 
 //__________________ Section: /api/articles _______________//
+
+describe("GET: /api/articles", () => {
+  test("200: responds with an array of all articles as objects", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toHaveLength(13);
+        expect(articles).toBeSortedBy("created_at", {
+          descending: true,
+        });
+        articles.forEach((article) => {
+          expect(article).toHaveProperty("author");
+          expect(article).toHaveProperty("title");
+          expect(article).toHaveProperty("article_id");
+          expect(article).toHaveProperty("topic");
+          expect(article).toHaveProperty("created_at");
+          expect(article).toHaveProperty("votes");
+          expect(article).toHaveProperty("article_img_url");
+          expect(article).toHaveProperty("comment_count");
+          expect(article).not.toHaveProperty("body");
+        });
+      });
+  });
+});
+
 describe("GET: /api/articles/:article_id", () => {
   test("200: responds with the specified article", () => {
     const responseExpected = {
