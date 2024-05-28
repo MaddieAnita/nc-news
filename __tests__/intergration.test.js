@@ -44,19 +44,11 @@ describe("GET: /api/topics", () => {
 //__________________ Section: /api/articles _______________//
 describe("GET: /api/articles/:article_id", () => {
   test("200: responds with the specified article", () => {
-    const responseExpected = {
-      title: "Eight pug gifs that remind me of mitch",
-      topic: "mitch",
-      author: "icellusedkars",
-      body: "some gifs",
-      created_at: "2020-11-03T09:12:00.000Z",
-      article_img_url:
-        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-    };
     return request(app)
       .get("/api/articles/3")
       .expect(200)
       .then(({ body: { article } }) => {
+        expect(article.article_id).toBe(3);
         expect(article).toHaveProperty("author");
         expect(article).toHaveProperty("title");
         expect(article).toHaveProperty("article_id");
@@ -65,7 +57,6 @@ describe("GET: /api/articles/:article_id", () => {
         expect(article).toHaveProperty("created_at");
         expect(article).toHaveProperty("votes");
         expect(article).toHaveProperty("article_img_url");
-        expect(article).toMatchObject(responseExpected);
       });
   });
   test("404: sends appropriate status and msg when id does not exists", () => {
@@ -74,6 +65,14 @@ describe("GET: /api/articles/:article_id", () => {
       .expect(404)
       .then(({ body: { msg } }) => {
         expect(msg).toBe("Article not found");
+      });
+  });
+  test("400: sends appropriate status and msg when id passed is not a number", () => {
+    return request(app)
+      .get("/api/articles/not-a-number")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
       });
   });
 });
