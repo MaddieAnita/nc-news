@@ -119,17 +119,17 @@ describe("GET: /api/articles/:article_id/comments", () => {
         });
       });
   });
+  test("200: returns an empty array when article has no comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then(({ body: { articleComments } }) => {
+        expect(articleComments).toHaveLength(0);
+      });
+  });
   test("404: sends appropriate message and status when article id does not exists", () => {
     return request(app)
       .get("/api/articles/9999999/comments")
-      .expect(404)
-      .then(({ body: { msg } }) => {
-        expect(msg).toBe("Not found");
-      });
-  });
-  test("404: sends appropriate message and status when article does not have any comments", () => {
-    return request(app)
-      .get("/api/articles/2/comments")
       .expect(404)
       .then(({ body: { msg } }) => {
         expect(msg).toBe("Not found");
