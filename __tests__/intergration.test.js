@@ -98,6 +98,44 @@ describe("GET: /api/articles/:article_id", () => {
   });
 });
 
+describe("GET: /api/articles/:article_id/comments", () => {
+  test("200: responds with an array of comments for specified article", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body: { articleComments } }) => {
+        expect(articleComments).toBeSortedBy("created_at", {
+          descending: true,
+        });
+        articleComments.forEach((comment) => {
+          expect(comment.article_id).toBe(1);
+          expect(comment).toHaveProperty("comment_id");
+          expect(comment).toHaveProperty("votes");
+          expect(comment).toHaveProperty("created_at");
+          expect(comment).toHaveProperty("author");
+          expect(comment).toHaveProperty("body");
+          expect(comment).toHaveProperty("article_id");
+        });
+      });
+  });
+  test("404: sends appropriate message and status when article id does not exists", () => {
+    return request(app)
+      .get("/api/articles/9999999/comments")
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Article not found");
+      });
+  });
+  test("400: sends appropriate message and status when article id passed is not a number", () => {
+    return request(app)
+      .get("/api/articles/not-a-number/comments")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+});
+
 //__________________ 404 Wildcard Testing _______________//
 describe("404 For Non found paths", () => {
   test("404: send 404 message and status when path is not found", () => {
