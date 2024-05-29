@@ -183,7 +183,7 @@ describe("POST: /api/articles/:article_id/comments", () => {
       .send(malformedBody)
       .expect(400)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Not Found");
+        expect(msg).toBe("Bad request - Error");
       });
   });
   test("400: sends appropriate message and status when article id does not exist in article table", () => {
@@ -196,7 +196,7 @@ describe("POST: /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(400)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Not Found");
+        expect(msg).toBe("Bad request - Error");
       });
   });
 });
