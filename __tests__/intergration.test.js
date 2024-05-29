@@ -277,6 +277,28 @@ describe("POST: /api/articles/:article_id/comments", () => {
   });
 });
 
+describe("DELETE: /api/comments/:comment_id", () => {
+  test("204: responds with no content and successfully deletes comment", () => {
+    return request(app).delete("/api/comments/2").expect(204);
+  });
+  test("404: sends appropriate message and status when comment id doesnt exist", () => {
+    return request(app)
+      .delete("/api/comments/99999999")
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Article not found");
+      });
+  });
+  test("400: sends appropriate message and status when passed malformed request", () => {
+    return request(app)
+      .delete("/api/comments/not-a-number")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+});
+
 //__________________ 404 Wildcard Testing _______________//
 describe("404 For Non found paths", () => {
   test("404: send 404 message and status when path is not found", () => {
