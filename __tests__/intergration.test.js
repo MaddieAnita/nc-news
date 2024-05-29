@@ -299,6 +299,23 @@ describe("DELETE: /api/comments/:comment_id", () => {
   });
 });
 
+//__________________ Section: /api/users _______________//
+describe("GET: /api/users", () => {
+  test("200: resolves with a list of all users", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body: { users } }) => {
+        expect(users).toHaveLength(4);
+        users.forEach((user) => {
+          expect(user).toHaveProperty("username");
+          expect(user).toHaveProperty("name");
+          expect(user).toHaveProperty("avatar_url");
+        });
+      });
+  });
+});
+
 //__________________ 404 Wildcard Testing _______________//
 describe("404 For Non found paths", () => {
   test("404: send 404 message and status when path is not found", () => {
