@@ -292,60 +292,41 @@ describe("POST: /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(201)
       .then(({ body: { newComment } }) => {
-        expect(newComment).toHaveLength(1);
-        expect(newComment).toMatchObject(newComment);
+        expect(newComment.article_id).toBe(5);
+        expect(newComment).toHaveProperty("comment_id");
+        expect(newComment).toHaveProperty("body");
+        expect(newComment).toHaveProperty("article_id");
+        expect(newComment).toHaveProperty("author");
+        expect(newComment).toHaveProperty("votes");
+        expect(newComment).toHaveProperty("created_at");
       });
   });
-  test("400: sends an appropriate message and status when passed a malformed body", () => {
-    const malformedBody = {
+  test("201: successfully adds new comment to article and returns comment ignoring irrelevant keys/values on body", () => {
+    const newComment = {
       username: "butter_bridge",
-      msg: 5,
+      body: "A brand new comment!",
+      likes: 1000,
     };
     return request(app)
-      .post("/api/articles/5/comments")
-      .send(malformedBody)
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Bad request - malformed body");
+      .post("/api/articles/6/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body: { newComment } }) => {
+        expect(newComment.article_id).toBe(6);
+        expect(newComment).not.toHaveProperty("likes");
       });
   });
   test("400: sends an appropriate message and status when passed a invalid id format", () => {
-    const malformedBody = {
+    const newComment = {
       username: "butter_bridge",
       body: "great comment",
     };
     return request(app)
       .post("/api/articles/not-a-number/comments")
-      .send(malformedBody)
+      .send(newComment)
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad request - malformed body");
-      });
-  });
-  test("400: sends an appropriate message and status when passed a invalid username format", () => {
-    const malformedBody = {
-      username: true,
-      body: "great comment",
-    };
-    return request(app)
-      .post("/api/articles/1/comments")
-      .send(malformedBody)
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Bad request - malformed body");
-      });
-  });
-  test("404: sends an appropriate message and status when passed a non-valid user", () => {
-    const malformedBody = {
-      username: "dont_exist",
-      body: "A brand new comment!",
-    };
-    return request(app)
-      .post("/api/articles/5/comments")
-      .send(malformedBody)
-      .expect(404)
-      .then(({ body: { msg } }) => {
-        expect(msg).toBe("User not found");
+        expect(body.msg).toBe("Bad request");
       });
   });
   test("404: sends appropriate message and status when article id does not exist in article table", () => {
@@ -358,21 +339,33 @@ describe("POST: /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(404)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Article not found");
+        expect(msg).toBe("Error Not Found");
       });
   });
-  test("400: sends an appropriate message and status when passed a body with unaccepted keys/values", () => {
+  test("400: sends an appropriate message and status when passed a malformed body", () => {
     const malformedBody = {
       username: "butter_bridge",
-      body: "great comment",
-      another_key: 1248,
+      msg: 5,
     };
     return request(app)
-      .post("/api/articles/1/comments")
+      .post("/api/articles/5/comments")
       .send(malformedBody)
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad request - malformed body");
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("404: sends an appropriate message and status when passed a non-valid user", () => {
+    const newComment = {
+      username: "dont_exist",
+      body: "A brand new comment!",
+    };
+    return request(app)
+      .post("/api/articles/5/comments")
+      .send(newComment)
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Error Not Found");
       });
   });
 });

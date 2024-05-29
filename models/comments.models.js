@@ -21,46 +21,15 @@ exports.findCommentsByArticleId = (article_id) => {
 };
 
 exports.insertCommentByArticleId = (article_id, commentToPost) => {
-  const checkBodyKeys = Object.keys(commentToPost).every((val) =>
-    ["username", "body"].includes(val)
-  );
-  if (
-    !checkBodyKeys ||
-    typeof commentToPost.username !== "string" ||
-    isNaN(article_id)
-  ) {
-    return Promise.reject({ status: 400, msg: "Bad request - malformed body" });
-  }
-
   const queryValues = [commentToPost.body, article_id, commentToPost.username];
   return db
-    .query("SELECT article_id FROM articles where article_id = $1", [
-      article_id,
-    ])
-    .then(({ rows }) => {
-      if (!rows.length) {
-        return Promise.reject({ status: 404, msg: "Article not found" });
-      }
-    })
-    .then(() => {
-      return db.query("SELECT username FROM users WHERE username = $1", [
-        commentToPost.username,
-      ]);
-    })
-    .then(({ rows }) => {
-      if (!rows.length) {
-        return Promise.reject({ status: 404, msg: "User not found" });
-      }
-    })
-    .then(() => {
-      return db.query(
-        `INSERT INTO comments (body, article_id, author)
+    .query(
+      `INSERT INTO comments (body, article_id, author)
     VALUES ($1, $2, $3) RETURNING *;`,
-        queryValues
-      );
-    })
+      queryValues
+    )
     .then(({ rows }) => {
-      return rows;
+      return rows[0];
     });
 };
 
