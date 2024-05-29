@@ -120,6 +120,7 @@ describe("GET: /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body: { article } }) => {
         expect(article.article_id).toBe(3);
+        expect(article.comment_count).toBe("2");
         expect(article).toHaveProperty("author");
         expect(article).toHaveProperty("title");
         expect(article).toHaveProperty("article_id");
@@ -128,6 +129,7 @@ describe("GET: /api/articles/:article_id", () => {
         expect(article).toHaveProperty("created_at");
         expect(article).toHaveProperty("votes");
         expect(article).toHaveProperty("article_img_url");
+        expect(article).toHaveProperty("comment_count");
       });
   });
   test("404: sends appropriate status and msg when id does not exists", () => {
