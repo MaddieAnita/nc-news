@@ -65,6 +65,10 @@
   "POST /api/articles/:article_id/comments": {
     "description": "inserts new comment for a specified article",
     "queries": [],
+    "acceptedRequest": {
+      "username": "butter_bridge",
+      "body": "a great new comment to add please"
+    },
     "exampleResponse": {
       "newComment": [
         {
