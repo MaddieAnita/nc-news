@@ -145,6 +145,62 @@ describe("GET: /api/articles/:article_id/comments", () => {
   });
 });
 
+describe("POST: /api/articles/:article_id/comments", () => {
+  test("200: successfully adds new comment to article and returns the posted comment", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "A brand new comment!",
+    };
+    return request(app)
+      .post("/api/articles/5/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body: { newComment } }) => {
+        expect(newComment).toHaveLength(1);
+        expect(newComment).toMatchObject(newComment);
+      });
+  });
+  test("400: sends an appropriate message and status when passed a malformed body", () => {
+    const malformedBody = {
+      username: "butter_bridge",
+      msg: 5,
+    };
+    return request(app)
+      .post("/api/articles/5/comments")
+      .send(malformedBody)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("400: sends an appropriate message and status when passed a non-valid user", () => {
+    const malformedBody = {
+      username: "dont_exist",
+      body: "A brand new comment!",
+    };
+    return request(app)
+      .post("/api/articles/5/comments")
+      .send(malformedBody)
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request - Error");
+      });
+  });
+  test("400: sends appropriate message and status when article id does not exist in article table", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "A brand new comment again!",
+    };
+    return request(app)
+      .post("/api/articles/99999999/comments")
+      .send(newComment)
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request - Error");
+      });
+  });
+});
+
 //__________________ 404 Wildcard Testing _______________//
 describe("404 For Non found paths", () => {
   test("404: send 404 message and status when path is not found", () => {

@@ -60,5 +60,21 @@
         }
       ]
     }
+  },
+  "POST /api/articles/:article_id/comments": {
+    "description": "inserts new comment for a specified article",
+    "queries": [],
+    "exampleResponse": {
+      "newComment": [
+        {
+          "comment_id": 19,
+          "body": "A brand new comment!",
+          "article_id": 5,
+          "author": "butter_bridge",
+          "votes": 0,
+          "created_at": "2024-05-28T16:35:41.100Z"
+        }
+      ]
+    }
   }
 }

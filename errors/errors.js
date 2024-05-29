@@ -1,5 +1,7 @@
 exports.handlePsqlErrors = (err, req, res, next) => {
-  if (err.code) {
+  if (err.code === "23503") {
+    res.status(400).send({ msg: "Bad request - Error" });
+  } else if (err.code) {
     res.status(400).send({ msg: "Bad request" });
   } else {
     next(err);
