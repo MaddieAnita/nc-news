@@ -61,6 +61,56 @@ describe("GET: /api/articles", () => {
         });
       });
   });
+  test("200: responds with array of articles filtered by given topic", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toHaveLength(12);
+        articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
+  test("200: responds with array of articles filtered by multiple given topics", () => {
+    const acceptedCategories = ["mitch", "cats"];
+    return request(app)
+      .get("/api/articles?topic=mitch&topic=cats")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toHaveLength(13);
+        articles.forEach((article) => {
+          expect(acceptedCategories).toContain(article.topic);
+        });
+      });
+  });
+  test("200: returns articles with selected topic ignoring anything else invalid on query", () => {
+    return request(app)
+      .get("/api/articles?category=computer&topic=mitch")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toHaveLength(12);
+        articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
+  test("404: sends appropriate msg and status when topic does not exist", () => {
+    return request(app)
+      .get("/api/articles?topic=something")
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Topic Not Found");
+      });
+  });
+  test("400: sends appropriate msg and status when parsed invalid query", () => {
+    return request(app)
+      .get("/api/articles?category=computer")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request - invalid query");
+      });
+  });
 });
 
 describe("GET: /api/articles/:article_id", () => {

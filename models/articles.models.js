@@ -1,20 +1,42 @@
 const db = require("../db/connection");
 
-exports.findArticles = () => {
-  return db
-    .query(
-      `SELECT articles.author, title, article_id, topic, articles.created_at, 
-      articles.votes, article_img_url, 
-    COUNT(comments.article_id) AS comment_count
-    FROM articles 
-    LEFT JOIN comments USING (article_id) 
-    GROUP BY (article_id)
-    ORDER BY created_at DESC
-    `
-    )
-    .then(({ rows }) => {
-      return rows;
-    });
+exports.findArticles = (queryObj) => {
+  if (Object.keys(queryObj).length && !queryObj.topic) {
+    return Promise.reject({ status: 400, msg: "Bad request - invalid query" });
+  }
+
+  const { topic } = queryObj;
+
+  const queryValues = [];
+  let queryString = `SELECT articles.author, title, article_id, topic, articles.created_at, 
+  articles.votes, article_img_url, 
+  COUNT(comments.article_id) AS comment_count
+  FROM articles 
+  LEFT JOIN comments USING (article_id)`;
+
+  if (topic) {
+    if (Array.isArray(topic)) {
+      queryString += ` WHERE articles.topic = $${queryValues.length + 1}`;
+      queryValues.push(topic[0]);
+      topic.slice(1).forEach((item) => {
+        queryString += ` OR articles.topic = $${queryValues.length + 1}`;
+        queryValues.push(item);
+      });
+    } else {
+      queryString += " WHERE articles.topic = $1";
+      queryValues.push(topic);
+    }
+  }
+
+  queryString += ` GROUP BY (article_id)
+  ORDER BY created_at DESC;`;
+
+  return db.query(queryString, queryValues).then(({ rows }) => {
+    if (!rows.length) {
+      return Promise.reject({ status: 404, msg: "Topic Not Found" });
+    }
+    return rows;
+  });
 };
 
 exports.findArticlesById = (article_id) => {
