@@ -29,6 +29,9 @@ exports.findArticlesById = (article_id) => {
 };
 
 exports.updateArticleVotesById = (article_id, patchBody) => {
+  if (!Object.keys(patchBody).includes("inc_votes")) {
+    return Promise.reject({ status: 400, msg: "Bad request - Malformed Body" });
+  }
   const { inc_votes } = patchBody;
   return db
     .query(
