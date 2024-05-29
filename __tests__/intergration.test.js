@@ -98,6 +98,82 @@ describe("GET: /api/articles/:article_id", () => {
   });
 });
 
+describe("PATCH: /api/articles/:article_id", () => {
+  test("200: successfully increments votes on given article and returns updated article", () => {
+    const expectedArticle = {
+      article_id: 3,
+      title: "Eight pug gifs that remind me of mitch",
+      topic: "mitch",
+      author: "icellusedkars",
+      body: "some gifs",
+      created_at: "2020-11-03T09:12:00.000Z",
+      votes: 1,
+      article_img_url:
+        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+    };
+    const incrementVotes = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/articles/3")
+      .send(incrementVotes)
+      .expect(200)
+      .then(({ body: { updatedArticle } }) => {
+        expect(updatedArticle).toMatchObject(expectedArticle);
+      });
+  });
+  test("200: successfully decrements votes on given article and returns updated article", () => {
+    const expectedArticle = {
+      article_id: 1,
+      title: "Living in the shadow of a great man",
+      topic: "mitch",
+      author: "butter_bridge",
+      body: "I find this existence challenging",
+      created_at: "2020-07-09T20:11:00.000Z",
+      votes: 90,
+      article_img_url:
+        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+    };
+    const decrementVotes = { inc_votes: -10 };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(decrementVotes)
+      .expect(200)
+      .then(({ body: { updatedArticle } }) => {
+        expect(updatedArticle).toMatchObject(expectedArticle);
+      });
+  });
+  test("404: sends appropriate message and status when article id does not exists", () => {
+    const incrementVotes = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/articles/99999")
+      .send(incrementVotes)
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Article not found");
+      });
+  });
+  test("400: sends appropriate message and status when passed a malformed body", () => {
+    const incrementVotes = { inc_votes: "not a number" };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(incrementVotes)
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("400: sends appropriate message and status when passed a malformed key", () => {
+    const incrementVotes = { votes: 5 };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(incrementVotes)
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+});
+
+//__________________ Section: /api/articles/:article_id/comments _______________//
 describe("GET: /api/articles/:article_id/comments", () => {
   test("200: responds with an array of comments for specified article", () => {
     return request(app)
