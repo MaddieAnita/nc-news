@@ -232,7 +232,7 @@ describe("GET: /api/articles/:article_id/comments", () => {
 });
 
 describe("POST: /api/articles/:article_id/comments", () => {
-  test("200: successfully adds new comment to article and returns the posted comment", () => {
+  test("201: successfully adds new comment to article and returns the posted comment", () => {
     const newComment = {
       username: "butter_bridge",
       body: "A brand new comment!",
@@ -256,10 +256,36 @@ describe("POST: /api/articles/:article_id/comments", () => {
       .send(malformedBody)
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad request");
+        expect(body.msg).toBe("Bad request - malformed body");
       });
   });
-  test("400: sends an appropriate message and status when passed a non-valid user", () => {
+  test("400: sends an appropriate message and status when passed a invalid id format", () => {
+    const malformedBody = {
+      username: "butter_bridge",
+      body: "great comment",
+    };
+    return request(app)
+      .post("/api/articles/not-a-number/comments")
+      .send(malformedBody)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request - malformed body");
+      });
+  });
+  test("400: sends an appropriate message and status when passed a invalid username format", () => {
+    const malformedBody = {
+      username: true,
+      body: "great comment",
+    };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(malformedBody)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request - malformed body");
+      });
+  });
+  test("404: sends an appropriate message and status when passed a non-valid user", () => {
     const malformedBody = {
       username: "dont_exist",
       body: "A brand new comment!",
@@ -267,12 +293,12 @@ describe("POST: /api/articles/:article_id/comments", () => {
     return request(app)
       .post("/api/articles/5/comments")
       .send(malformedBody)
-      .expect(400)
+      .expect(404)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Bad request - Error");
+        expect(msg).toBe("User not found");
       });
   });
-  test("400: sends appropriate message and status when article id does not exist in article table", () => {
+  test("404: sends appropriate message and status when article id does not exist in article table", () => {
     const newComment = {
       username: "butter_bridge",
       body: "A brand new comment again!",
@@ -280,9 +306,23 @@ describe("POST: /api/articles/:article_id/comments", () => {
     return request(app)
       .post("/api/articles/99999999/comments")
       .send(newComment)
-      .expect(400)
+      .expect(404)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Bad request - Error");
+        expect(msg).toBe("Article not found");
+      });
+  });
+  test("400: sends an appropriate message and status when passed a body with unaccepted keys/values", () => {
+    const malformedBody = {
+      username: "butter_bridge",
+      body: "great comment",
+      another_key: 1248,
+    };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(malformedBody)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request - malformed body");
       });
   });
 });
