@@ -10,7 +10,7 @@
     "seed": "node ./db/seeds/run-seed.js",
     "test-watch": "jest --watch",
     "test": "jest",
-    "prepare": "husky install"
+    "prepare": "node .husky/install.mjs"
   },
   "repository": {
     "type": "git",
