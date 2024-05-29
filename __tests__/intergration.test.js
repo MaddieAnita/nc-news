@@ -151,6 +151,16 @@ describe("PATCH: /api/articles/:article_id", () => {
         expect(msg).toBe("Article not found");
       });
   });
+  test("400: sends appropriate message and status when passed invalid endpoint", () => {
+    const incrementVotes = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/articles/banana")
+      .send(incrementVotes)
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
   test("400: sends appropriate message and status when passed a malformed body", () => {
     const incrementVotes = { inc_votes: "not a number" };
     return request(app)
@@ -161,14 +171,14 @@ describe("PATCH: /api/articles/:article_id", () => {
         expect(msg).toBe("Bad request");
       });
   });
-  test("400: sends appropriate message and status when passed a malformed key", () => {
+  test("400: sends appropriate message and status when passed an invalid key", () => {
     const incrementVotes = { votes: 5 };
     return request(app)
       .patch("/api/articles/1")
       .send(incrementVotes)
       .expect(400)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Bad request");
+        expect(msg).toBe("Bad request - Malformed Body");
       });
   });
 });
