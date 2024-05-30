@@ -3,13 +3,26 @@ const {
   findArticles,
   updateArticleVotesById,
   insertPost,
+  getTotalArticles,
 } = require("../models/articles.models");
 
 exports.getArticles = (req, res, next) => {
-  const { sort_by, order, topic } = req.query;
-  findArticles(sort_by, order, topic)
-    .then((articles) => {
-      res.status(200).send({ articles });
+  const { sort_by, order, topic, page, limit } = req.query;
+
+  const promiseArray = [findArticles(sort_by, order, topic, page, limit)];
+
+  if (page || limit) {
+    promiseArray.push(getTotalArticles());
+  }
+
+  Promise.all(promiseArray)
+    .then((data) => {
+      const articles = data[0];
+      if (data.length > 1) {
+        res.status(200).send({ articles, total_count: data[1].total_count });
+      } else {
+        res.status(200).send({ articles });
+      }
     })
     .catch((err) => {
       next(err);
