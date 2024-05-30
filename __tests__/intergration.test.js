@@ -498,7 +498,7 @@ describe("GET: /api/users", () => {
   });
 });
 
-describe.only("GET: /api/users/:username", () => {
+describe("GET: /api/users/:username", () => {
   test("200: returns user by specified username passed", () => {
     return request(app)
       .get("/api/users/butter_bridge")
