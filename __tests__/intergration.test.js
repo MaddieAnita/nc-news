@@ -200,6 +200,117 @@ describe("GET: /api/articles", () => {
   });
 });
 
+describe("POST: /api/articles", () => {
+  test("201: returns the newly posted article when article img is passed", () => {
+    const newArticle = {
+      author: "icellusedkars",
+      title: "The dogs bananas",
+      body: "some text here",
+      topic: "paper",
+      article_img_url:
+        "https://www.pexels.com/photo/black-and-white-border-collie-sitting-on-brown-wicker-armchair-7678420/",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(201)
+      .then(({ body: { newArticle } }) => {
+        expect(newArticle.article_id).toBe(14);
+        expect(newArticle).toHaveProperty("author");
+        expect(newArticle).toHaveProperty("title");
+        expect(newArticle).toHaveProperty("article_id");
+        expect(newArticle).toHaveProperty("topic");
+        expect(newArticle).toHaveProperty("created_at");
+        expect(newArticle).toHaveProperty("votes");
+        expect(newArticle).toHaveProperty("article_img_url");
+        expect(newArticle).toHaveProperty("comment_count");
+        expect(newArticle).toHaveProperty("body");
+      });
+  });
+  test("201: returns the newly posted article with img_url using default image", () => {
+    const newArticle = {
+      author: "icellusedkars",
+      title: "The dogs bananas",
+      body: "some text here",
+      topic: "paper",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(201)
+      .then(({ body: { newArticle } }) => {
+        expect(newArticle.article_id).toBe(14);
+        expect(newArticle.article_img_url).toBe(
+          "https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700"
+        );
+      });
+  });
+  test("201: returns newly created article which ignores extra parts of the body not needed", () => {
+    const newArticle = {
+      author: "icellusedkars",
+      title: "a new article title is here",
+      body: "some text here",
+      topic: "paper",
+      something_else: 234,
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(201)
+      .then(({ body: { newArticle } }) => {
+        expect(newArticle.article_id).toBe(14);
+        expect(newArticle).not.toHaveProperty("something_else");
+      });
+  });
+  test("201: returns newly created article and does NOT update votes column in table", () => {
+    const newArticle = {
+      author: "icellusedkars",
+      title: "a new article title is here",
+      body: "some text here",
+      topic: "paper",
+      votes: 234,
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(201)
+      .then(({ body: { newArticle } }) => {
+        expect(newArticle.article_id).toBe(14);
+        expect(newArticle.votes).toBe(0);
+      });
+  });
+  test("404: sends appropriate msg and status when passed an author that doesnt exist", () => {
+    const newArticle = {
+      author: "idontexist",
+      title: "a new article title is here",
+      body: "some text here",
+      topic: "paper",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Error Not Found");
+      });
+  });
+  test("404: sends appropriate msg and status when passed an author that doesnt exist", () => {
+    const newArticle = {
+      author: "icellusedkars",
+      title: "a new article title is here",
+      body: "some text here",
+      topic: "idontexist",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Error Not Found");
+      });
+  });
+});
+
 describe("GET: /api/articles/:article_id", () => {
   test("200: responds with the specified article", () => {
     return request(app)
