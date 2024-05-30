@@ -128,7 +128,7 @@ describe("GET: /api/articles", () => {
       .get("/api/articles?sort_by=doesnt_exist")
       .expect(400)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Bad request");
+        expect(msg).toBe("Bad request - invalid query");
       });
   });
   test("400: sends appropriate message and status when passed multiple sort_by's", () => {
@@ -136,7 +136,7 @@ describe("GET: /api/articles", () => {
       .get("/api/articles?sort_by=author&sort_by=author_id")
       .expect(400)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Bad request");
+        expect(msg).toBe("Bad request - invalid query");
       });
   });
   test("200: resolves with list of articles ordered by valid option", () => {
@@ -196,6 +196,134 @@ describe("GET: /api/articles", () => {
         articles.forEach((article) => {
           expect(article.topic).toBe("mitch");
         });
+      });
+  });
+  test("200: returns 10 articles for page 1 with total count of articles", () => {
+    return request(app)
+      .get("/api/articles?page=1")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles[0].article_id).toBe(3);
+        expect(articles).toHaveLength(10);
+        expect(total_count).toBe("13");
+      });
+  });
+  test("200: returns 10 articles for page 2 offset by 10 with total count of articles", () => {
+    return request(app)
+      .get("/api/articles?page=2")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles[0].article_id).toBe(8);
+        expect(articles).toHaveLength(3);
+        expect(total_count).toBe("13");
+      });
+  });
+  test("400: returns msg and status when passed page option is NaN", () => {
+    return request(app)
+      .get("/api/articles?page=not-a-number")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request - invalid query");
+      });
+  });
+  test("200: returns articles limited by given query with total count of articles", () => {
+    return request(app)
+      .get("/api/articles?limit=3")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles[0].article_id).toBe(3);
+        expect(articles).toHaveLength(3);
+        expect(total_count).toBe("13");
+      });
+  });
+  test("400: returns msg and status when passed limit option is NaN", () => {
+    return request(app)
+      .get("/api/articles?limit=not-a-number")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request - invalid query");
+      });
+  });
+  test("200: returns articles for page 1 limited by query given with total count of articles", () => {
+    return request(app)
+      .get("/api/articles?page=1&limit=3")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles[0].article_id).toBe(3);
+        expect(articles).toHaveLength(3);
+        expect(total_count).toBe("13");
+      });
+  });
+  test("200: returns 3 articles for page 2 offset by limit given with total count of articles", () => {
+    return request(app)
+      .get("/api/articles?page=2&limit=3")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles[0].article_id).toBe(13);
+        expect(articles).toHaveLength(3);
+        expect(total_count).toBe("13");
+      });
+  });
+  test("200: returns articles for page 2 offset by limit given with filtered queries with total count of articles", () => {
+    return request(app)
+      .get(
+        "/api/articles?page=2&limit=3&topic=mitch&sort_by=article_id&order=asc"
+      )
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles).toBeSortedBy("article_id", { descending: false });
+        expect(articles[0].article_id).toBe(4);
+        expect(articles).toHaveLength(3);
+        expect(total_count).toBe("13");
+        articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
+  test("200: returns articles for page 2 offset by limit given with filtered queries with total count of articles ignoring other queries", () => {
+    return request(app)
+      .get(
+        "/api/articles?page=2&limit=3&topic=mitch&sort_by=article_id&order=asc&computer=mac"
+      )
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles).toBeSortedBy("article_id", { descending: false });
+        expect(articles[0].article_id).toBe(4);
+        expect(articles).toHaveLength(3);
+        expect(total_count).toBe("13");
+        articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
+  test("404: sends msg and status when passed complex query with unknown topic", () => {
+    return request(app)
+      .get(
+        "/api/articles?page=2&limit=3&topic=idontexist&sort_by=article_id&order=asc"
+      )
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Topic Not Found");
+      });
+  });
+  test("400: sends msg and status when passed complex query with invalid order", () => {
+    return request(app)
+      .get(
+        "/api/articles?page=2&limit=3&topic=mitch&sort_by=article_id&order=idontexist"
+      )
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request - invalid query");
+      });
+  });
+  test("400: sends msg and status when passed complex query with invalid sort_by", () => {
+    return request(app)
+      .get(
+        "/api/articles?page=2&limit=3&topic=mitch&sort_by=idontexist&order=asc"
+      )
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request - invalid query");
       });
   });
 });

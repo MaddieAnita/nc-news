@@ -1,10 +1,26 @@
 const db = require("../db/connection");
 const format = require("pg-format");
 
-exports.findArticles = (sort_by, order, topic) => {
-  const validQueries = ["asc", "desc"];
+exports.findArticles = (sort_by, order, topic, page, limit) => {
+  const validQueries = [
+    "asc",
+    "desc",
+    "article_id",
+    "author",
+    "title",
+    "topic",
+    "created_at",
+    "votes",
+    "article_img_url",
+    "comment_count",
+  ];
 
-  if (order && !validQueries.includes(order)) {
+  if (
+    (order && !validQueries.includes(order)) ||
+    (sort_by && !validQueries.includes(sort_by)) ||
+    (page && isNaN(page)) ||
+    (limit && isNaN(limit))
+  ) {
     return Promise.reject({ status: 400, msg: "Bad request - invalid query" });
   }
 
@@ -41,12 +57,38 @@ exports.findArticles = (sort_by, order, topic) => {
     queryString += ` ORDER BY created_at DESC`;
   }
 
+  if (page || limit) {
+    if (page === "1" && !limit) {
+      queryString += ` LIMIT 10`;
+    } else if (page !== "1" && !limit) {
+      queryString += ` LIMIT 10 OFFSET ($${queryValues.length + 1} * 10 - 10)`;
+      queryValues.push(page);
+    } else if ((page === "1" || !page) && limit) {
+      queryString += ` LIMIT $${queryValues.length + 1}`;
+      queryValues.push(limit);
+    } else if (page !== "1" && limit) {
+      queryString += ` LIMIT $${queryValues.length + 1}`;
+      queryValues.push(limit);
+      queryString += ` OFFSET $${queryValues.length + 1} `;
+      const offset = (page - 1) * limit;
+      queryValues.push(offset);
+    }
+  }
+
   return db.query(queryString + ";", queryValues).then(({ rows }) => {
     if (!rows.length) {
       return Promise.reject({ status: 404, msg: "Topic Not Found" });
     }
     return rows;
   });
+};
+
+exports.getTotalArticles = () => {
+  return db
+    .query("SELECT COUNT(article_id) AS total_count FROM articles;")
+    .then(({ rows }) => {
+      return rows[0];
+    });
 };
 
 exports.findArticlesById = (article_id) => {
