@@ -1,15 +1,11 @@
 const db = require("../db/connection");
 
-exports.findArticles = (queryObj) => {
-  const validQueries = ["topic", "sort_by", "order"];
-  const checkQueryKeys = Object.keys(queryObj).filter((item) =>
-    validQueries.includes(item)
-  );
-  if (Object.keys(queryObj).length && !checkQueryKeys.length) {
+exports.findArticles = (sort_by, order, topic) => {
+  const validQueries = ["asc", "desc"];
+
+  if (order && !validQueries.includes(order)) {
     return Promise.reject({ status: 400, msg: "Bad request - invalid query" });
   }
-
-  const { topic, sort_by, order } = queryObj;
 
   const queryValues = [];
   let queryString = `SELECT articles.author, title, article_id, topic, articles.created_at, 

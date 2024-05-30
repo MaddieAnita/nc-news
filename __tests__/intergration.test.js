@@ -84,7 +84,7 @@ describe("GET: /api/articles", () => {
         });
       });
   });
-  test("200: returns articles with selected topic ignoring anything else invalid on query", () => {
+  test("200: returns articles with selected topic ignoring anything else on query", () => {
     return request(app)
       .get("/api/articles?category=computer&topic=mitch")
       .expect(200)
@@ -113,7 +113,7 @@ describe("GET: /api/articles", () => {
         });
       });
   });
-  test("200: resolves with list of articles sorted by valid column DESC ignoring invalid queries", () => {
+  test("200: resolves with list of articles sorted by valid column DESC ignoring other queries", () => {
     return request(app)
       .get("/api/articles?sort_by=author&computer=windows")
       .expect(200)
@@ -149,7 +149,7 @@ describe("GET: /api/articles", () => {
         });
       });
   });
-  test("200: resolves with list of articles ordered by valid option ignoring invalid queries", () => {
+  test("200: resolves with list of articles ordered by valid option ignoring other queries", () => {
     return request(app)
       .get("/api/articles?order=asc&computer=mac")
       .expect(200)
@@ -164,7 +164,7 @@ describe("GET: /api/articles", () => {
       .get("/api/articles?order=doesnt_exist")
       .expect(400)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Bad request");
+        expect(msg).toBe("Bad request - invalid query");
       });
   });
   test("400: sends appropriate message and status when passed multiple order queries", () => {
@@ -172,7 +172,7 @@ describe("GET: /api/articles", () => {
       .get("/api/articles?order=asc&order=desc")
       .expect(400)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Bad request");
+        expect(msg).toBe("Bad request - invalid query");
       });
   });
   test("200: resolves with list of articles sorted by valid column and ordered by valid option", () => {
@@ -196,14 +196,6 @@ describe("GET: /api/articles", () => {
         articles.forEach((article) => {
           expect(article.topic).toBe("mitch");
         });
-      });
-  });
-  test("400: sends appropriate msg and status when passed invalid query", () => {
-    return request(app)
-      .get("/api/articles?category=computer")
-      .expect(400)
-      .then(({ body: { msg } }) => {
-        expect(msg).toBe("Bad request - invalid query");
       });
   });
 });
