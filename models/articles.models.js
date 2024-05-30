@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const format = require("pg-format");
 
 exports.findArticles = (sort_by, order, topic) => {
   const validQueries = ["asc", "desc"];
@@ -85,4 +86,27 @@ exports.updateArticleVotesById = (article_id, patchBody) => {
       }
       return rows[0];
     });
+};
+
+exports.insertPost = (articleToPost) => {
+  const { author, title, body, topic, article_img_url } = articleToPost;
+  const queryIdentifiers = ["author", "title", "body", "topic"];
+  const queryValues = [author, title, body, topic];
+
+  if (article_img_url) {
+    queryIdentifiers.push("article_img_url");
+    queryValues.push(article_img_url);
+  }
+
+  const insertPost = format(
+    `INSERT INTO articles (%I)
+  VALUES (%L)
+  RETURNING *;`,
+    queryIdentifiers,
+    queryValues
+  );
+  return db.query(insertPost).then(({ rows }) => {
+    rows[0].comment_count = 0;
+    return rows[0];
+  });
 };

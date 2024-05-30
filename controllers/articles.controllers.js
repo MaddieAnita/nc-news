@@ -2,6 +2,7 @@ const {
   findArticlesById,
   findArticles,
   updateArticleVotesById,
+  insertPost,
 } = require("../models/articles.models");
 
 exports.getArticles = (req, res, next) => {
@@ -31,6 +32,16 @@ exports.patchArticleVotesById = (req, res, next) => {
   updateArticleVotesById(article_id, req.body)
     .then((updatedArticle) => {
       res.status(200).send({ updatedArticle });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.postArticle = (req, res, next) => {
+  insertPost(req.body)
+    .then((newArticle) => {
+      res.status(201).send({ newArticle });
     })
     .catch((err) => {
       next(err);

@@ -27,6 +27,23 @@
       ]
     }
   },
+  "POST /api/articles": {
+    "description": "Posts a new article and returns new article",
+    "body": ["author", "title", "body", "topic", "article_img_url (OPTIONAL)"],
+    "exampleResponse": {
+      "newArticle": {
+        "article_id": 14,
+        "title": "The dogs bananas",
+        "topic": "paper",
+        "author": "icellusedkars",
+        "body": "some text here",
+        "created_at": "2024-05-30T13:42:09.770Z",
+        "votes": 0,
+        "article_img_url": "https://www.pexels.com/photo/black-and-white-border-collie-sitting-on-brown-wicker-armchair-7678420/",
+        "comment_count": 0
+      }
+    }
+  },
   "GET /api/articles/:article_id": {
     "description": "serves the requested article by id",
     "queries": [],
