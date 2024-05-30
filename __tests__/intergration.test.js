@@ -481,6 +481,77 @@ describe("DELETE: /api/comments/:comment_id", () => {
   });
 });
 
+describe("PATCH: /api/comments/:comment_id", () => {
+  test("200: successfully increments comment votes and returns comment", () => {
+    const expectedComment = {
+      comment_id: 3,
+      body: "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
+      votes: 101,
+      author: "icellusedkars",
+      article_id: 1,
+      created_at: "2020-03-01T01:13:00.000Z",
+    };
+    const incrementVotes = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/comments/3")
+      .send(incrementVotes)
+      .expect(200)
+      .then(({ body: { updatedComment } }) => {
+        expect(updatedComment.comment_id).toBe(3);
+        expect(updatedComment).toMatchObject(expectedComment);
+      });
+  });
+  test("200: successfully decreases comment votes and returns comment", () => {
+    const expectedComment = {
+      comment_id: 3,
+      body: "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
+      votes: 99,
+      author: "icellusedkars",
+      article_id: 1,
+      created_at: "2020-03-01T01:13:00.000Z",
+    };
+    const decreaseVotes = { inc_votes: -1 };
+    return request(app)
+      .patch("/api/comments/3")
+      .send(decreaseVotes)
+      .expect(200)
+      .then(({ body: { updatedComment } }) => {
+        expect(updatedComment.comment_id).toBe(3);
+        expect(updatedComment).toMatchObject(expectedComment);
+      });
+  });
+  test("404: returns msg and status when comment_id does not exist", () => {
+    const incrementVotes = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/comments/9999999")
+      .send(incrementVotes)
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Comment not found");
+      });
+  });
+  test("400: returns msg and status when passed wrong ID format", () => {
+    const incrementVotes = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/comments/not-a-number")
+      .send(incrementVotes)
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("400: returns msg and status when passed malformed body", () => {
+    const incrementVotes = { inc_votes: "one hundred" };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(incrementVotes)
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+});
+
 //__________________ Section: /api/users _______________//
 describe("GET: /api/users", () => {
   test("200: resolves with a list of all users", () => {
