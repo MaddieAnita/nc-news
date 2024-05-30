@@ -11,8 +11,7 @@
   },
   "GET /api/articles": {
     "description": "serves an array of all articles",
-    "queries": ["topic"],
-    "params": ["inc_votes"],
+    "queries": ["topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [
         {
@@ -85,6 +84,7 @@
   "PATCH /api/articles/:article_id": {
     "description": "updates votes on specified article and returns article",
     "queries": [],
+    "params": ["inc_votes"],
     "exampleResponse": {
       "updatedArticle": {
         "article_id": 3,

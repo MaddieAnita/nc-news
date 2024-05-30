@@ -1,11 +1,15 @@
 const db = require("../db/connection");
 
 exports.findArticles = (queryObj) => {
-  if (Object.keys(queryObj).length && !queryObj.topic) {
+  const validQueries = ["topic", "sort_by", "order"];
+  const checkQueryKeys = Object.keys(queryObj).filter((item) =>
+    validQueries.includes(item)
+  );
+  if (Object.keys(queryObj).length && !checkQueryKeys.length) {
     return Promise.reject({ status: 400, msg: "Bad request - invalid query" });
   }
 
-  const { topic } = queryObj;
+  const { topic, sort_by, order } = queryObj;
 
   const queryValues = [];
   let queryString = `SELECT articles.author, title, article_id, topic, articles.created_at, 
@@ -28,10 +32,19 @@ exports.findArticles = (queryObj) => {
     }
   }
 
-  queryString += ` GROUP BY (article_id)
-  ORDER BY created_at DESC;`;
+  queryString += ` GROUP BY (article_id)`;
 
-  return db.query(queryString, queryValues).then(({ rows }) => {
+  if (sort_by && order) {
+    queryString += ` ORDER BY ${sort_by} ${order}`;
+  } else if (sort_by) {
+    queryString += ` ORDER BY ${sort_by} DESC`;
+  } else if (order) {
+    queryString += ` ORDER BY created_at ${order}`;
+  } else {
+    queryString += ` ORDER BY created_at DESC`;
+  }
+
+  return db.query(queryString + ";", queryValues).then(({ rows }) => {
     if (!rows.length) {
       return Promise.reject({ status: 404, msg: "Topic Not Found" });
     }

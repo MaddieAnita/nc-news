@@ -103,7 +103,102 @@ describe("GET: /api/articles", () => {
         expect(msg).toBe("Topic Not Found");
       });
   });
-  test("400: sends appropriate msg and status when parsed invalid query", () => {
+  test("200: resolves with list of articles sorted by valid column DESC", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toBeSortedBy("author", {
+          descending: true,
+        });
+      });
+  });
+  test("200: resolves with list of articles sorted by valid column DESC ignoring invalid queries", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author&computer=windows")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toBeSortedBy("author", {
+          descending: true,
+        });
+      });
+  });
+  test("400: sends appropriate message and status when passed invalid column on sort_by", () => {
+    return request(app)
+      .get("/api/articles?sort_by=doesnt_exist")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("400: sends appropriate message and status when passed multiple sort_by's", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author&sort_by=author_id")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("200: resolves with list of articles ordered by valid option", () => {
+    return request(app)
+      .get("/api/articles?order=asc")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toBeSortedBy("created_at", {
+          descending: false,
+        });
+      });
+  });
+  test("200: resolves with list of articles ordered by valid option ignoring invalid queries", () => {
+    return request(app)
+      .get("/api/articles?order=asc&computer=mac")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toBeSortedBy("created_at", {
+          descending: false,
+        });
+      });
+  });
+  test("400: sends appropriate message and status when passed invalid option on order", () => {
+    return request(app)
+      .get("/api/articles?order=doesnt_exist")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("400: sends appropriate message and status when passed multiple order queries", () => {
+    return request(app)
+      .get("/api/articles?order=asc&order=desc")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("200: resolves with list of articles sorted by valid column and ordered by valid option", () => {
+    return request(app)
+      .get("/api/articles?sort_by=article_id&order=asc")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toBeSortedBy("article_id", {
+          descending: false,
+        });
+      });
+  });
+  test("200: resolves with list of articles when passed valid topic,sort_by and order queries", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch&sort_by=article_id&order=asc")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles).toBeSortedBy("article_id", {
+          descending: false,
+        });
+        articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
+  test("400: sends appropriate msg and status when passed invalid query", () => {
     return request(app)
       .get("/api/articles?category=computer")
       .expect(400)
