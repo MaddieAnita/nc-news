@@ -550,6 +550,16 @@ describe("PATCH: /api/comments/:comment_id", () => {
         expect(msg).toBe("Bad request");
       });
   });
+  test("400: returns msg and status when passed incorrect votes key", () => {
+    const incrementVotes = { votes: 5 };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(incrementVotes)
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
 });
 
 //__________________ Section: /api/users _______________//
