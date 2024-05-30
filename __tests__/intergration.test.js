@@ -498,6 +498,27 @@ describe("GET: /api/users", () => {
   });
 });
 
+describe.only("GET: /api/users/:username", () => {
+  test("200: returns user by specified username passed", () => {
+    return request(app)
+      .get("/api/users/butter_bridge")
+      .expect(200)
+      .then(({ body: { user } }) => {
+        expect(user.username).toBe("butter_bridge");
+        expect(user).toHaveProperty("avatar_url");
+        expect(user).toHaveProperty("name");
+      });
+  });
+  test("404: sends msg and status when user not found", () => {
+    return request(app)
+      .get("/api/users/i_dont_exists_lala")
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("User not found");
+      });
+  });
+});
+
 //__________________ 404 Wildcard Testing _______________//
 describe("404 For Non found paths", () => {
   test("404: send 404 message and status when path is not found", () => {
