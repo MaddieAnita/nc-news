@@ -274,25 +274,25 @@ describe("GET: /api/articles", () => {
         expect(articles).toBeSortedBy("article_id", { descending: false });
         expect(articles[0].article_id).toBe(4);
         expect(articles).toHaveLength(3);
-        expect(total_count).toBe("13");
+        expect(total_count).toBe("12");
         articles.forEach((article) => {
           expect(article.topic).toBe("mitch");
         });
       });
   });
-  test("200: returns articles for page 2 offset by limit given with filtered queries with total count of articles ignoring other queries", () => {
+  test("200: returns articles for page 1 offset by limit given with filtered queries with total count of articles ignoring other queries", () => {
     return request(app)
       .get(
-        "/api/articles?page=2&limit=3&topic=mitch&sort_by=article_id&order=asc&computer=mac"
+        "/api/articles?page=1&limit=3&topic=cats&sort_by=article_id&order=asc&computer=mac"
       )
       .expect(200)
       .then(({ body: { articles, total_count } }) => {
         expect(articles).toBeSortedBy("article_id", { descending: false });
-        expect(articles[0].article_id).toBe(4);
-        expect(articles).toHaveLength(3);
-        expect(total_count).toBe("13");
+        expect(articles[0].article_id).toBe(5);
+        expect(articles).toHaveLength(1);
+        expect(total_count).toBe("1");
         articles.forEach((article) => {
-          expect(article.topic).toBe("mitch");
+          expect(article.topic).toBe("cats");
         });
       });
   });

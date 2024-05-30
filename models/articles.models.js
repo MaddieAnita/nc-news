@@ -74,7 +74,6 @@ exports.findArticles = (sort_by, order, topic, page, limit) => {
       queryValues.push(offset);
     }
   }
-
   return db.query(queryString + ";", queryValues).then(({ rows }) => {
     if (!rows.length) {
       return Promise.reject({ status: 404, msg: "Topic Not Found" });
@@ -83,12 +82,25 @@ exports.findArticles = (sort_by, order, topic, page, limit) => {
   });
 };
 
-exports.getTotalArticles = () => {
-  return db
-    .query("SELECT COUNT(article_id) AS total_count FROM articles;")
-    .then(({ rows }) => {
-      return rows[0];
-    });
+exports.getTotalArticles = (topic) => {
+  const queryVals = [];
+  let queryStr = "SELECT COUNT(article_id) AS total_count FROM articles";
+  if (topic) {
+    if (Array.isArray(topic)) {
+      queryStr += ` WHERE topic = $${queryValues.length + 1}`;
+      queryVals.push(topic[0]);
+      topic.slice(1).forEach((item) => {
+        queryStr += ` OR topic = $${queryValues.length + 1}`;
+        queryVals.push(item);
+      });
+    } else {
+      queryStr += " WHERE topic = $1";
+      queryVals.push(topic);
+    }
+  }
+  return db.query(queryStr + ";", queryVals).then(({ rows }) => {
+    return rows[0];
+  });
 };
 
 exports.findArticlesById = (article_id) => {

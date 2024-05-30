@@ -12,7 +12,7 @@ exports.getArticles = (req, res, next) => {
   const promiseArray = [findArticles(sort_by, order, topic, page, limit)];
 
   if (page || limit) {
-    promiseArray.push(getTotalArticles());
+    promiseArray.push(getTotalArticles(topic));
   }
 
   Promise.all(promiseArray)
