@@ -619,6 +619,28 @@ describe("PATCH: /api/articles/:article_id", () => {
   });
 });
 
+describe("DELETE: /api/articles/:article_id", () => {
+  test("204: responds with no content and successfully deletes article", () => {
+    return request(app).delete("/api/articles/1").expect(204);
+  });
+  test("404: sends appropriate message and status when article id doesnt exist", () => {
+    return request(app)
+      .delete("/api/articles/9999999")
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Article not found");
+      });
+  });
+  test("400: sends appropriate message and status when passed malformed request", () => {
+    return request(app)
+      .delete("/api/articles/not-a-number")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+});
+
 //__________________ Section: /api/articles/:article_id/comments _______________//
 describe("GET: /api/articles/:article_id/comments", () => {
   test("200: responds with an array of comments for specified article", () => {

@@ -51,6 +51,9 @@
       }
     }
   },
+  "DELETE /api/articles": {
+    "description": "deletes article by ID"
+  },
   "GET /api/articles/:article_id": {
     "description": "serves the requested article by id",
     "queries": [],

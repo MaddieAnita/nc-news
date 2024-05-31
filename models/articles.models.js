@@ -164,3 +164,18 @@ exports.insertPost = (articleToPost) => {
     return rows[0];
   });
 };
+
+exports.removeArticleById = (article_id) => {
+  return db
+    .query("DELETE FROM comments WHERE article_id = $1", [article_id])
+    .then(() => {
+      return db.query("DELETE FROM articles WHERE article_id = $1", [
+        article_id,
+      ]);
+    })
+    .then(({ rowCount }) => {
+      if (rowCount === 0) {
+        return Promise.reject({ status: 404, msg: "Article not found" });
+      }
+    });
+};
