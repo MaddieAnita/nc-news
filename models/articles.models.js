@@ -1,7 +1,8 @@
 const db = require("../db/connection");
 const format = require("pg-format");
+const { lastIndexOf } = require("../db/data/test-data/articles");
 
-exports.findArticles = (sort_by, order, topic, page, limit) => {
+exports.findArticles = (sort_by, order, topic, page, limit, featured) => {
   const validQueries = [
     "asc",
     "desc",
@@ -13,11 +14,14 @@ exports.findArticles = (sort_by, order, topic, page, limit) => {
     "votes",
     "article_img_url",
     "comment_count",
+    "true",
+    "false",
   ];
 
   if (
     (order && !validQueries.includes(order)) ||
     (sort_by && !validQueries.includes(sort_by)) ||
+    (featured && !validQueries.includes(featured)) ||
     (page && isNaN(page)) ||
     (limit && isNaN(limit))
   ) {
@@ -27,7 +31,8 @@ exports.findArticles = (sort_by, order, topic, page, limit) => {
   const queryValues = [];
   let queryString = `SELECT articles.author, title, article_id, topic, articles.created_at, 
   articles.votes, article_img_url, 
-  COUNT(comments.article_id) AS comment_count
+  COUNT(comments.article_id) AS comment_count,
+  articles.featured
   FROM articles 
   LEFT JOIN comments USING (article_id)`;
 
@@ -42,6 +47,19 @@ exports.findArticles = (sort_by, order, topic, page, limit) => {
     } else {
       queryString += " WHERE articles.topic = $1";
       queryValues.push(topic);
+    }
+  }
+
+  if (featured !== undefined) {
+    if (queryValues.length) {
+      queryString += ` AND articles.featured = $${queryValues.length + 1}`;
+    } else {
+      queryString += ` WHERE articles.featured = $${queryValues.length + 1}`;
+    }
+    if (featured === "true") {
+      queryValues.push("t");
+    } else {
+      queryValues.push("f");
     }
   }
 
@@ -74,6 +92,7 @@ exports.findArticles = (sort_by, order, topic, page, limit) => {
       queryValues.push(offset);
     }
   }
+  // console.log(queryString, queryValues);
   return db.query(queryString + ";", queryValues).then(({ rows }) => {
     if (!rows.length) {
       return Promise.reject({ status: 404, msg: "Topic Not Found" });
@@ -82,7 +101,7 @@ exports.findArticles = (sort_by, order, topic, page, limit) => {
   });
 };
 
-exports.getTotalArticles = (topic) => {
+exports.getTotalArticles = (topic, featured) => {
   const queryVals = [];
   let queryStr = "SELECT COUNT(article_id) AS total_count FROM articles";
   if (topic) {
@@ -98,6 +117,20 @@ exports.getTotalArticles = (topic) => {
       queryVals.push(topic);
     }
   }
+
+  if (featured !== undefined) {
+    if (queryVals.length) {
+      queryStr += ` AND articles.featured = $${queryVals.length + 1}`;
+    } else {
+      queryStr += ` WHERE articles.featured = $${queryVals.length + 1}`;
+    }
+    if (featured === "true") {
+      queryVals.push("t");
+    } else {
+      queryVals.push("f");
+    }
+  }
+
   return db.query(queryStr + ";", queryVals).then(({ rows }) => {
     return rows[0];
   });
@@ -122,24 +155,36 @@ exports.findArticlesById = (article_id) => {
 };
 
 exports.updateArticleVotesById = (article_id, patchBody) => {
-  if (!Object.keys(patchBody).includes("inc_votes")) {
-    return Promise.reject({ status: 400, msg: "Bad request - Malformed Body" });
+  const { inc_votes, featured } = patchBody;
+
+  const queryValues = [];
+  let queryString = `UPDATE articles`;
+
+  if (inc_votes) {
+    queryString += ` SET votes = votes + $${queryValues.length + 1}`;
+    queryValues.push(inc_votes);
   }
-  const { inc_votes } = patchBody;
-  return db
-    .query(
-      `UPDATE articles
-  SET votes = votes + $1
-  WHERE article_id = $2
-  RETURNING *;`,
-      [inc_votes, article_id]
-    )
-    .then(({ rows }) => {
-      if (!rows.length) {
-        return Promise.reject({ status: 404, msg: "Article not found" });
-      }
-      return rows[0];
-    });
+
+  if (featured !== undefined && !inc_votes) {
+    queryString += ` SET featured = $${queryValues.length + 1}`;
+    if (featured === true) {
+      queryValues.push("t");
+    } else if (featured === false) {
+      queryValues.push("f");
+    }
+  } else if (featured && inc_votes) {
+    queryString += ` AND featured = $${queryValues.length + 1}`;
+    queryValues.push(featured);
+  }
+  queryString += ` WHERE article_id = $${queryValues.length + 1} RETURNING *;`;
+  queryValues.push(article_id);
+
+  return db.query(queryString, queryValues).then(({ rows }) => {
+    if (!rows.length) {
+      return Promise.reject({ status: 404, msg: "Article not found" });
+    }
+    return rows[0];
+  });
 };
 
 exports.insertPost = (articleToPost) => {

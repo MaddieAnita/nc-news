@@ -17,8 +17,8 @@
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all articles that has several query capabilities inluding pagination",
-    "queries": ["topic", "sort_by", "order", "page", "limit"],
+    "description": "serves an array of all articles that has several query capabilities inluding pagination and retrieving featured posts",
+    "queries": ["topic", "sort_by", "order", "page", "limit", "featured"],
     "exampleResponse": {
       "articles": [
         {
@@ -110,9 +110,9 @@
     }
   },
   "PATCH /api/articles/:article_id": {
-    "description": "updates votes on specified article and returns article",
+    "description": "updates votes or sets featured on specified article and returns article",
     "queries": [],
-    "params": ["inc_votes"],
+    "params": ["inc_votes", "featured"],
     "exampleResponse": {
       "updatedArticle": {
         "article_id": 3,

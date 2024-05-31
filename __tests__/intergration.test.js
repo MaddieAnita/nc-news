@@ -402,6 +402,45 @@ describe("GET: /api/articles", () => {
         expect(total_count).toBe("1");
       });
   });
+  test("200: returns list of articles that are featured ", () => {
+    return request(app)
+      .get("/api/articles?featured=true")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles).toHaveLength(5);
+        expect(total_count).toBe("5");
+      });
+  });
+  test("200: returns list of articles that are not featured ", () => {
+    return request(app)
+      .get("/api/articles?featured=false")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles).toHaveLength(8);
+        expect(total_count).toBe("8");
+      });
+  });
+  test("200: returns list of featured article mixed with other queries", () => {
+    return request(app)
+      .get("/api/articles?featured=true&topic=mitch&sort_by=article_id")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles).toHaveLength(5);
+        expect(total_count).toBe("5");
+        expect(articles).toBeSortedBy("article_id", { descending: true });
+        articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
+  test("400: sends msg and status when passed malformed query", () => {
+    return request(app)
+      .get("/api/articles?featured=something-incorrect")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request - invalid query");
+      });
+  });
 });
 
 describe("POST: /api/articles", () => {
@@ -595,6 +634,27 @@ describe("PATCH: /api/articles/:article_id", () => {
         expect(updatedArticle).toMatchObject(expectedArticle);
       });
   });
+  test("200: successfully decreases votes on given article and returns updated article and ignores uneeded keys on body", () => {
+    const expectedArticle = {
+      article_id: 1,
+      title: "Living in the shadow of a great man",
+      topic: "mitch",
+      author: "butter_bridge",
+      body: "I find this existence challenging",
+      created_at: "2020-07-09T20:11:00.000Z",
+      votes: 90,
+      article_img_url:
+        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+    };
+    const patchRequest = { inc_votes: -10, i_dont_exists: "ignore me" };
+    return request(app)
+      .patch("/api/articles/1")
+      .send(patchRequest)
+      .expect(200)
+      .then(({ body: { updatedArticle } }) => {
+        expect(updatedArticle).toMatchObject(expectedArticle);
+      });
+  });
   test("404: sends appropriate message and status when article id does not exists", () => {
     const incrementVotes = { inc_votes: 1 };
     return request(app)
@@ -625,14 +685,46 @@ describe("PATCH: /api/articles/:article_id", () => {
         expect(msg).toBe("Bad request");
       });
   });
-  test("400: sends appropriate message and status when passed an invalid key", () => {
-    const incrementVotes = { votes: 5 };
+  test("200: returns updated article with featured key set to true", () => {
+    const patchBody = { featured: true };
     return request(app)
-      .patch("/api/articles/1")
-      .send(incrementVotes)
+      .patch("/api/articles/3")
+      .send(patchBody)
+      .expect(200)
+      .then(({ body: { updatedArticle } }) => {
+        expect(updatedArticle).toHaveProperty("featured");
+        expect(updatedArticle.featured).toBe(true);
+      });
+  });
+  test("200: returns updated article with featured key set to false", () => {
+    const patchBody = { featured: false };
+    return request(app)
+      .patch("/api/articles/3")
+      .send(patchBody)
+      .expect(200)
+      .then(({ body: { updatedArticle } }) => {
+        expect(updatedArticle).toHaveProperty("featured");
+        expect(updatedArticle.featured).toBe(false);
+      });
+  });
+  test("400: sends status and msg when passed malformed body", () => {
+    const patchBody = { featured: "something else" };
+    return request(app)
+      .patch("/api/articles/3")
+      .send(patchBody)
       .expect(400)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe("Bad request - Malformed Body");
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("404: sends status and msg when passed invalid id", () => {
+    const patchBody = { featured: true };
+    return request(app)
+      .patch("/api/articles/999999999")
+      .send(patchBody)
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Article not found");
       });
   });
 });
