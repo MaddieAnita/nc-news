@@ -36,6 +36,64 @@ describe("GET: /api/topics", () => {
   });
 });
 
+describe("POST: /api/topics", () => {
+  test("201: successfully post new topic and returns newly added topic", () => {
+    const topicToPost = {
+      slug: "topic name here",
+      description: "description here",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(topicToPost)
+      .expect(201)
+      .then(({ body: { newTopic } }) => {
+        expect(newTopic).toHaveProperty("slug");
+        expect(newTopic).toHaveProperty("description");
+      });
+  });
+  test("201: successfully post new topic and returns topic ignoring extras on body", () => {
+    const topicToPost = {
+      slug: "topic name here",
+      description: "description here",
+      another_key: "ignore me",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(topicToPost)
+      .expect(201)
+      .then(({ body: { newTopic } }) => {
+        expect(newTopic).toHaveProperty("slug");
+        expect(newTopic).toHaveProperty("description");
+      });
+  });
+  test("200: adds new topic even if body is missing a key", () => {
+    const topicToPost = {
+      slug: "topic name here",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(topicToPost)
+      .expect(201)
+      .then(({ body: { newTopic } }) => {
+        expect(newTopic).toHaveProperty("slug");
+        expect(newTopic).toHaveProperty("description");
+        expect(newTopic.description).toBe(null);
+      });
+  });
+  test("400: sends msg and status when passed body without slug key", () => {
+    const topicToPost = {
+      description: "im a description for topic",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(topicToPost)
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+});
+
 //__________________ Section: /api/articles _______________//
 
 describe("GET: /api/articles", () => {
@@ -422,7 +480,7 @@ describe("POST: /api/articles", () => {
         expect(msg).toBe("Error Not Found");
       });
   });
-  test("404: sends appropriate msg and status when passed an author that doesnt exist", () => {
+  test("404: sends appropriate msg and status when passed a topic that doesnt exist", () => {
     const newArticle = {
       author: "icellusedkars",
       title: "a new article title is here",
