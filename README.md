@@ -24,7 +24,7 @@ This NC News API is using the following technologies:
 
 (TO UPDATE)
 
-- Articles: CREATE, READ, UPDATE, DELETE articles. Pagination on articles available with a total count feature which also takes into account any filters applied
+- Articles: CREATE, READ, UPDATE, DELETE articles. Pagination on articles available with a total count feature which also takes into account any filters applied. You can also filter by topic & featured.
 - Comments: CREATE, READ, UPDATE, DELETE comments and comments on from specific articles. Pagination available on comments by article ID
 - Topics: CREATE and READ topics available
 - Users: READ users and READ users by username
@@ -35,14 +35,14 @@ The NC News API has the following endpoints:
 
 - GET /api/topics - returns a list of topics
 - GET /api/articles - returns a list of articles
-- GET /api/articles/:article_id - Queries available ["topic", "sort_by", "order", "page", "limit"] - returns an article by speficied ID
+- GET /api/articles/:article_id - Queries available ["topic", "sort_by", "order", "page", "limit", "featured"] - returns an article by speficied ID
 - GET /api/articles/:article_id/comments - Queries available ["limit", "page"] - returns comments on a specified article
 - GET /api/users - returns a list of users
 - GET /api/users/:username - returns a user by username
 - POST /api/topics - adds new topic
 - POST /api/articles - adds new article
 - POST /api/articles/:article_id/comments - posts a new comment to specified article
-- PATCH /api/articles/:article_id - updates votes on specified article
+- PATCH /api/articles/:article_id - updates votes or sets article as featured on specified article
 - PATCH /api/comments/:comment_id - update votes on speficied comment
 - DELETE /api/comments/:comment_id - deletes a comment by specified ID
 - DELETE /api/articles/:article_id - deletes an article by specified ID
