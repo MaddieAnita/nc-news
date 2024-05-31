@@ -61,7 +61,7 @@ exports.findArticles = (sort_by, order, topic, page, limit) => {
     if (page === "1" && !limit) {
       queryString += ` LIMIT 10`;
     } else if (page !== "1" && !limit) {
-      queryString += ` LIMIT 10 OFFSET ($${queryValues.length + 1} * 10 - 10)`;
+      queryString += ` LIMIT 10 OFFSET ($${queryValues.length + 1} - 1) * 10`;
       queryValues.push(page);
     } else if ((page === "1" || !page) && limit) {
       queryString += ` LIMIT $${queryValues.length + 1}`;

@@ -607,6 +607,118 @@ describe("GET: /api/articles/:article_id/comments", () => {
         expect(msg).toBe("Bad request");
       });
   });
+  test("200: returns comments 1-10 for page 1 of paginated comments", () => {
+    return request(app)
+      .get("/api/articles/1/comments?page=1")
+      .expect(200)
+      .then(({ body: { articleComments } }) => {
+        expect(articleComments).toHaveLength(10);
+        expect(articleComments[0].comment_id).toBe(5);
+      });
+  });
+  test("200: returns 10 comments offset by 10 for page 2 of paginated comments", () => {
+    return request(app)
+      .get("/api/articles/1/comments?page=2")
+      .expect(200)
+      .then(({ body: { articleComments } }) => {
+        expect(articleComments).toHaveLength(1);
+        expect(articleComments[0].comment_id).toBe(9);
+      });
+  });
+  test("200: return 10 comments for page 1 ignoring other queries", () => {
+    return request(app)
+      .get("/api/articles/1/comments?page=1&another_key=ignore_me")
+      .expect(200)
+      .then(({ body: { articleComments } }) => {
+        expect(articleComments).toHaveLength(10);
+        expect(articleComments[0].comment_id).toBe(5);
+      });
+  });
+  test("400: sends msg and status when page query is not a number", () => {
+    return request(app)
+      .get("/api/articles/1/comments?page=not-a-number")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("200: return comments limited by query", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=3")
+      .expect(200)
+      .then(({ body: { articleComments } }) => {
+        expect(articleComments).toHaveLength(3);
+        expect(articleComments[0].comment_id).toBe(5);
+      });
+  });
+  test("200: return comments limited by query ignoring other queries", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=3&another_key=ignore_me")
+      .expect(200)
+      .then(({ body: { articleComments } }) => {
+        expect(articleComments).toHaveLength(3);
+        expect(articleComments[0].comment_id).toBe(5);
+      });
+  });
+  test("400: sends msg and status when limit query is not a number", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=not-a-number")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("200: returns page 1 comments limited by query", () => {
+    return request(app)
+      .get("/api/articles/1/comments?page=1&limit=3")
+      .expect(200)
+      .then(({ body: { articleComments } }) => {
+        expect(articleComments).toHaveLength(3);
+        expect(articleComments[0].comment_id).toBe(5);
+      });
+  });
+  test("200: returns page 3 comments limited by query", () => {
+    return request(app)
+      .get("/api/articles/1/comments?page=3&limit=3")
+      .expect(200)
+      .then(({ body: { articleComments } }) => {
+        expect(articleComments).toHaveLength(3);
+        expect(articleComments[0].comment_id).toBe(6);
+      });
+  });
+  test("200: return page 1 comments limited by query ignoring other queries", () => {
+    return request(app)
+      .get("/api/articles/1/comments?page=1&limit=3&another_key=ignore_me")
+      .expect(200)
+      .then(({ body: { articleComments } }) => {
+        expect(articleComments).toHaveLength(3);
+        expect(articleComments[0].comment_id).toBe(5);
+      });
+  });
+  test("400: send msg and status when passed a bad request in limit or page query", () => {
+    return request(app)
+      .get("/api/articles/1/comments?page=1&limit=not-a-number")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
+  test("404: send msg and status when article ID is incorrect with queries", () => {
+    return request(app)
+      .get("/api/articles/999999/comments?page=1&limit=3")
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Not found");
+      });
+  });
+  test("400: send msg and status when article is not a number with queries", () => {
+    return request(app)
+      .get("/api/articles/not-a-number/comments?page=1&limit=3")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad request");
+      });
+  });
 });
 
 describe("POST: /api/articles/:article_id/comments", () => {
