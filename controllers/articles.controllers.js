@@ -10,20 +10,16 @@ const {
 exports.getArticles = (req, res, next) => {
   const { sort_by, order, topic, page, limit } = req.query;
 
-  const promiseArray = [findArticles(sort_by, order, topic, page, limit)];
-
-  if (page || limit) {
-    promiseArray.push(getTotalArticles(topic));
-  }
+  const promiseArray = [
+    findArticles(sort_by, order, topic, page, limit),
+    getTotalArticles(topic),
+  ];
 
   Promise.all(promiseArray)
     .then((data) => {
       const articles = data[0];
-      if (data.length > 1) {
-        res.status(200).send({ articles, total_count: data[1].total_count });
-      } else {
-        res.status(200).send({ articles });
-      }
+      const total_count = data[1].total_count;
+      res.status(200).send({ articles, total_count });
     })
     .catch((err) => {
       next(err);

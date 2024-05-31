@@ -384,6 +384,24 @@ describe("GET: /api/articles", () => {
         expect(msg).toBe("Bad request - invalid query");
       });
   });
+  test("200: resolves with all article including total_count key", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles).toHaveLength(13);
+        expect(total_count).toBe("13");
+      });
+  });
+  test("200: resolves with all article including total_count key when filtered by topic", () => {
+    return request(app)
+      .get("/api/articles?topic=cats")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles).toHaveLength(1);
+        expect(total_count).toBe("1");
+      });
+  });
 });
 
 describe("POST: /api/articles", () => {

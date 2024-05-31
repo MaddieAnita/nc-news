@@ -87,10 +87,10 @@ exports.getTotalArticles = (topic) => {
   let queryStr = "SELECT COUNT(article_id) AS total_count FROM articles";
   if (topic) {
     if (Array.isArray(topic)) {
-      queryStr += ` WHERE topic = $${queryValues.length + 1}`;
+      queryStr += ` WHERE topic = $${queryVals.length + 1}`;
       queryVals.push(topic[0]);
       topic.slice(1).forEach((item) => {
-        queryStr += ` OR topic = $${queryValues.length + 1}`;
+        queryStr += ` OR topic = $${queryVals.length + 1}`;
         queryVals.push(item);
       });
     } else {

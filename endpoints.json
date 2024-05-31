@@ -17,8 +17,8 @@
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all articles",
-    "queries": ["topic", "sort_by", "order"],
+    "description": "serves an array of all articles that has several query capabilities inluding pagination",
+    "queries": ["topic", "sort_by", "order", "page", "limit"],
     "exampleResponse": {
       "articles": [
         {
@@ -31,7 +31,8 @@
           "comment_count": 6,
           "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
         }
-      ]
+      ],
+      "total_count": 6
     }
   },
   "POST /api/articles": {
