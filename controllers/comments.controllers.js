@@ -1,16 +1,26 @@
+const { totalCount } = require("../db/connection");
 const {
   findCommentsByArticleId,
   insertCommentByArticleId,
   removeCommentById,
   updateCommentById,
+  getTotalCommentsByArticleId,
 } = require("../models/comments.models");
 
 exports.getCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;
   const { page, limit } = req.query;
-  findCommentsByArticleId(article_id, page, limit)
-    .then((articleComments) => {
-      res.status(200).send({ articleComments });
+
+  const promiseArray = [
+    findCommentsByArticleId(article_id, page, limit),
+    getTotalCommentsByArticleId(article_id),
+  ];
+
+  Promise.all(promiseArray)
+    .then((data) => {
+      const articleComments = data[0];
+      const total_count = data[1].total_count;
+      res.status(200).send({ articleComments, total_count });
     })
     .catch((err) => {
       next(err);

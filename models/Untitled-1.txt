@@ -1,0 +1,21 @@
+
+
+
+
+// FEATURE - get recommended articles based on comments they have left on articles
+
+/*
+- GET /api/articles/:user_id/recommended
+
+return articles based on comments
+
+{
+    mostCommented: []
+}
+
+Order both by votes to get most popular
+
+if not written any comments send back empty array
+
+*/
+

@@ -781,6 +781,14 @@ describe("GET: /api/articles/:article_id/comments", () => {
         expect(articleComments).toHaveLength(0);
       });
   });
+  test("200: returns list of comments with total_count property", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body: { total_count } }) => {
+        expect(total_count).toBe("11");
+      });
+  });
   test("404: sends appropriate message and status when article id does not exists", () => {
     return request(app)
       .get("/api/articles/9999999/comments")

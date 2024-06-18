@@ -1,6 +1,5 @@
 const db = require("../db/connection");
 const format = require("pg-format");
-const { lastIndexOf } = require("../db/data/test-data/articles");
 
 exports.findArticles = (sort_by, order, topic, page, limit, featured) => {
   const validQueries = [
@@ -92,7 +91,7 @@ exports.findArticles = (sort_by, order, topic, page, limit, featured) => {
       queryValues.push(offset);
     }
   }
-  // console.log(queryString, queryValues);
+
   return db.query(queryString + ";", queryValues).then(({ rows }) => {
     if (!rows.length) {
       return Promise.reject({ status: 404, msg: "Topic Not Found" });

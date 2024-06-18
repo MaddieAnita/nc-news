@@ -36,6 +36,19 @@ exports.findCommentsByArticleId = (article_id, page, limit) => {
   });
 };
 
+exports.getTotalCommentsByArticleId = (article_id) => {
+  return db
+    .query(
+      `SELECT COUNT(comment_id) AS total_count 
+    FROM comments 
+    WHERE article_id = $1`,
+      [article_id]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
 exports.insertCommentByArticleId = (article_id, commentToPost) => {
   const queryValues = [commentToPost.body, article_id, commentToPost.username];
   return db
