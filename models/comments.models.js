@@ -2,7 +2,7 @@ const db = require("../db/connection");
 
 exports.findCommentsByArticleId = (article_id, page, limit) => {
   const queryValues = [article_id];
-  let queryString = `SELECT * FROM comments 
+  let queryString = `SELECT comment_id, comments.body, article_id, comments.author, comments.votes, comments.created_at FROM comments 
   RIGHT JOIN articles USING (article_id)
   WHERE article_id = $1 
   ORDER BY comments.created_at DESC`;
