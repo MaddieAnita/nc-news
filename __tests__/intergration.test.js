@@ -433,6 +433,15 @@ describe("GET: /api/articles", () => {
         });
       });
   });
+  test("200: returns empty array when passed valid topic but with none featured", () => {
+    return request(app)
+      .get("/api/articles?featured=true&topic=cats")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles).toEqual([]);
+        expect(total_count).toBe("0");
+      });
+  });
   test("400: sends msg and status when passed malformed query", () => {
     return request(app)
       .get("/api/articles?featured=something-incorrect")

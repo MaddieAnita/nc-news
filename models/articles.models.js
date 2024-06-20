@@ -93,6 +93,9 @@ exports.findArticles = (sort_by, order, topic, page, limit, featured) => {
   }
 
   return db.query(queryString + ";", queryValues).then(({ rows }) => {
+    if (featured !== undefined && !rows.length) {
+      return [];
+    }
     if (!rows.length) {
       return Promise.reject({ status: 404, msg: "Topic Not Found" });
     }
