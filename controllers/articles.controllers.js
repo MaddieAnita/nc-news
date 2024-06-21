@@ -8,11 +8,11 @@ const {
 } = require("../models/articles.models");
 
 exports.getArticles = (req, res, next) => {
-  const { sort_by, order, topic, page, limit, featured } = req.query;
+  const { sort_by, order, topic, page, limit, featured, author } = req.query;
 
   const promiseArray = [
-    findArticles(sort_by, order, topic, page, limit, featured),
-    getTotalArticles(topic, featured),
+    findArticles(sort_by, order, topic, page, limit, featured, author),
+    getTotalArticles(topic, featured, author),
   ];
 
   Promise.all(promiseArray)

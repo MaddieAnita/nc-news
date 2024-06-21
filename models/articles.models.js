@@ -1,7 +1,15 @@
 const db = require("../db/connection");
 const format = require("pg-format");
 
-exports.findArticles = (sort_by, order, topic, page, limit, featured) => {
+exports.findArticles = (
+  sort_by,
+  order,
+  topic,
+  page,
+  limit,
+  featured,
+  author
+) => {
   const validQueries = [
     "asc",
     "desc",
@@ -35,6 +43,10 @@ exports.findArticles = (sort_by, order, topic, page, limit, featured) => {
   FROM articles 
   LEFT JOIN comments USING (article_id)`;
 
+  if (author) {
+    queryString += `RIGHT JOIN users ON users.username = articles.author`;
+  }
+
   if (topic) {
     if (Array.isArray(topic)) {
       queryString += ` WHERE articles.topic = $${queryValues.length + 1}`;
@@ -60,6 +72,15 @@ exports.findArticles = (sort_by, order, topic, page, limit, featured) => {
     } else {
       queryValues.push("f");
     }
+  }
+
+  if (author !== undefined) {
+    if (queryValues.length) {
+      queryString += ` AND users.username = $${queryValues.length + 1}`;
+    } else {
+      queryString += ` WHERE users.username = $${queryValues.length + 1}`;
+    }
+    queryValues.push(author);
   }
 
   queryString += ` GROUP BY (article_id)`;
@@ -96,6 +117,13 @@ exports.findArticles = (sort_by, order, topic, page, limit, featured) => {
     if (featured !== undefined && !rows.length) {
       return [];
     }
+
+    if (author !== undefined && !rows.length) {
+      return Promise.reject({ status: 404, msg: "User Not Found" });
+    } else if (author !== undefined && rows[0].author === null) {
+      return [];
+    }
+
     if (!rows.length) {
       return Promise.reject({ status: 404, msg: "Topic Not Found" });
     }
@@ -103,7 +131,7 @@ exports.findArticles = (sort_by, order, topic, page, limit, featured) => {
   });
 };
 
-exports.getTotalArticles = (topic, featured) => {
+exports.getTotalArticles = (topic, featured, author) => {
   const queryVals = [];
   let queryStr = "SELECT COUNT(article_id) AS total_count FROM articles";
   if (topic) {
@@ -131,6 +159,15 @@ exports.getTotalArticles = (topic, featured) => {
     } else {
       queryVals.push("f");
     }
+  }
+
+  if (author !== undefined) {
+    if (queryVals.length) {
+      queryStr += ` AND articles.author = $${queryVals.length + 1}`;
+    } else {
+      queryStr += ` WHERE articles.author = $${queryVals.length + 1}`;
+    }
+    queryVals.push(author);
   }
 
   return db.query(queryStr + ";", queryVals).then(({ rows }) => {

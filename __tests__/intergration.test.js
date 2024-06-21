@@ -450,6 +450,36 @@ describe("GET: /api/articles", () => {
         expect(msg).toBe("Bad request - invalid query");
       });
   });
+  test("200: returns list of articles by author passed", () => {
+    return request(app)
+      .get("/api/articles?author=butter_bridge")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles).toHaveLength(4);
+        expect(total_count).toBe("4");
+        articles.forEach((article) => {
+          expect(article.author).toBe("butter_bridge");
+        });
+      });
+  });
+  test("200: returns empty array when author has no articles", () => {
+    return request(app)
+      .get("/api/articles?author=lurker")
+      .expect(200)
+      .then(({ body: { articles, total_count } }) => {
+        expect(articles).toHaveLength(0);
+        expect(articles).toEqual([]);
+        expect(total_count).toBe("0");
+      });
+  });
+  test("404: sends msg and status when passed non-existing author", () => {
+    return request(app)
+      .get("/api/articles?author=idontexist")
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("User Not Found");
+      });
+  });
 });
 
 describe("POST: /api/articles", () => {
