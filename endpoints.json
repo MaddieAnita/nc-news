@@ -18,11 +18,20 @@
   },
   "GET /api/articles": {
     "description": "serves an array of all articles that has several query capabilities inluding pagination and retrieving featured posts",
-    "queries": ["topic", "sort_by", "order", "page", "limit", "featured"],
+    "queries": [
+      "topic",
+      "sort_by",
+      "order",
+      "page",
+      "limit",
+      "featured",
+      "author"
+    ],
     "exampleResponse": {
       "articles": [
         {
           "author": "weegembump",
+          "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
           "title": "Seafood substitutions are increasing",
           "article_id": 33,
           "topic": "cooking",
