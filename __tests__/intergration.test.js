@@ -119,6 +119,16 @@ describe("GET: /api/articles", () => {
         });
       });
   });
+  test("200: responds with list of article including avatar url from author", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        articles.forEach((article) => {
+          expect(article).toHaveProperty("avatar_url");
+        });
+      });
+  });
   test("200: responds with array of articles filtered by given topic", () => {
     return request(app)
       .get("/api/articles?topic=mitch")
